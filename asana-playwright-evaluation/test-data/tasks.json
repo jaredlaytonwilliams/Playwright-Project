@@ -1,0 +1,14 @@
+[
+  {
+    "project": "Web Application",
+    "column": "To Do",
+    "task": "Implement user authentication",
+    "tags": ["Feature", "High Priority"]
+  },
+  {
+    "project": "Web Application",
+    "column": "To Do",
+    "task": "Fix navigation bug",
+    "tags": ["Bug"]
+  }
+]

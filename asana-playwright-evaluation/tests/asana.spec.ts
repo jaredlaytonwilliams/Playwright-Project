@@ -1,41 +1,50 @@
 import { test, expect } from '@playwright/test';
+import testCases from '../test-data/tasks.json';
 
-test('test', async ({ page }) => {
-  await page.goto('https://create-asana-like-pr-39y5.bolt.host/');
+for (const testCase of testCases) {
 
-  // Click on the "Sign in" button
-  await page.getByRole('textbox', { name: 'Username' }).fill('admin');
-  await page.getByRole('textbox', { name: 'Password' }).fill('password123');
-  await page.getByRole('button', { name: 'Sign in' }).click();
-  
-  // Click on the "Web Application Main web" button
-  await page.getByRole('button', { name: 'Web Application Main web' }).click();
+  test(testCase.task, async ({ page }) => {
 
-  // Find the To Do heading
-  const todoHeading = page.getByText('To Do (2)', { exact: true });
-  await expect(todoHeading).toBeVisible();
+    await page.goto('https://create-asana-like-pr-39y5.bolt.host/');
 
-// Move up to the To Do column container
-  const todoColumn = todoHeading.locator('..');
+    // Login
+    await page.getByRole('textbox', { name: 'Username' }).fill('admin');
+    await page.getByRole('textbox', { name: 'Password' }).fill('password123');
+    await page.getByRole('button', { name: 'Sign in' }).click();
 
-// Find the task inside the To Do column
-const taskTitle = todoColumn.getByText(
-  'Implement user authentication',
-  { exact: true }
-);
+    // Navigate to project
+    await page
+      .getByRole('button', { name: testCase.project })
+      .click();
 
-await expect(taskTitle).toBeVisible();
+    // Find the correct column heading
+    const columnHeading = page.getByText(
+      new RegExp(`^${testCase.column} \\(\\d+\\)$`)
+    );
 
-// Move up to the task card container
-const taskCard = taskTitle.locator('..');
+    await expect(columnHeading).toBeVisible();
 
-// Verify Feature
-await expect(
-  taskCard.getByText('Feature', { exact: true })
-).toBeVisible();
+    // Move up to the column container
+    const column = columnHeading.locator('..');
 
-// Verify High Priority
-await expect(
-  taskCard.getByText('High Priority', { exact: true })
-).toBeVisible();
-});
+    // Find the task inside that column
+    const taskTitle = column.getByText(
+      testCase.task,
+      { exact: true }
+    );
+
+    await expect(taskTitle).toBeVisible();
+
+    // Move up to the task card
+    const taskCard = taskTitle.locator('..');
+
+    // Verify every tag listed in the JSON
+    for (const tag of testCase.tags) {
+      await expect(
+        taskCard.getByText(tag, { exact: true })
+      ).toBeVisible();
+    }
+
+  });
+
+}
